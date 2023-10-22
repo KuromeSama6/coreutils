@@ -1,4 +1,4 @@
 name: coreutils
-main: moe.icegame.coreutils.SpigotMain
+main: moe.icegame.coreutils.BungeeMain
 version: 1.0
 author: KuromeSama6
