@@ -58,6 +58,39 @@ public class MySqlUtil {
         }
     }
 
+    public static String[][] QueryWithParams(HikariDataSource dataSource, String sql, String... params) {// Define a CompletableFuture to execute the database query
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);) {
+
+            for (int i = 0; i < params.length; i++) statement.setString(i + 1, params[i]);
+            ResultSet resultSet = statement.executeQuery();
+
+            // row count
+            resultSet.last();
+            int rowCount = resultSet.getRow();
+            resultSet.beforeFirst();
+
+            String[][] ret = new String[rowCount][resultSet.getMetaData().getColumnCount()];
+
+            while (resultSet.next()) {
+                for (int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) {
+                    Object columnValue = resultSet.getObject(i + 1);
+                    String stringValue = null;
+                    if (columnValue != null) {
+                        stringValue = columnValue.toString();
+                    }
+
+                    ret[resultSet.getRow() - 1][i] = stringValue;
+                }
+            }
+
+            return ret;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
     public static void AsyncExecute(HikariDataSource dataSource, String sql){
         AsyncExecute(dataSource, sql, (a, b) -> {});
     }

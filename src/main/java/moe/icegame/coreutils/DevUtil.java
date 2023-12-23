@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 
 public class DevUtil {
 
@@ -30,6 +31,16 @@ public class DevUtil {
         scanner.close();
 
         return ret;
+    }
+
+    public static CompletableFuture<Void> RunAsync(Runnable func) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                func.run();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 }

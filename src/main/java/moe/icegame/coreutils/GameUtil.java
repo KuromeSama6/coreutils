@@ -20,6 +20,7 @@ import org.bukkit.scoreboard.*;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -48,7 +49,7 @@ public class GameUtil {
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(pl, func, 0L, ms / 1000 * 20);
     }
 
-    public static void UpdateCofig(File dataFolder, Object pl, String relPath) {
+    public static YamlConfiguration UpdateCofig(File dataFolder, Object pl, String relPath) {
         if (!Files.exists(Paths.get(dataFolder.getAbsolutePath()))) {
             try {
                 Files.createDirectory(Paths.get(dataFolder.getAbsolutePath()));
@@ -89,10 +90,14 @@ public class GameUtil {
                 }
 
                 if (changesMade) current.save(dataFolder + relPath);
+
+                return current;
             }
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
     public static YamlConfiguration ReadConfigFromString(String in) {
@@ -106,11 +111,46 @@ public class GameUtil {
         }
     }
 
-    public static void UpdateCofig(JavaPlugin pl, String relPath) {
-        UpdateCofig(pl.getDataFolder(), pl, relPath);
+    public static YamlConfiguration UpdateCofig(JavaPlugin pl, String relPath) {
+        return UpdateCofig(pl.getDataFolder(), pl, relPath);
     }
 
-    public static void UpdateCofig(File dataFolder, Object pl, String relPath, String outPath) {
+    public static YamlConfiguration UpdateConfigWithDefaults(JavaPlugin pl, String relPath) {
+        return UpdateConfigWithDefaults(pl.getDataFolder(), pl, relPath, relPath);
+    }
+
+    public static YamlConfiguration UpdateConfigWithDefaults(File dataFolder, Object pl, String relPath, String outPath) {
+        YamlConfiguration ret = new YamlConfiguration();
+        YamlConfiguration template = new YamlConfiguration();
+        try {
+            String content = DevUtil.ReadResourceFile(pl.getClass(), relPath.substring(1));
+            try {
+                template.loadFromString(content);
+            } catch (InvalidConfigurationException e) {
+                throw new RuntimeException(e);
+            }
+
+            ret.addDefaults(template);
+
+            File pth = new File(dataFolder + outPath);
+            if (!pth.exists()) {
+                // remove an empty file
+                if (template.getKeys(true).isEmpty()) {
+                    template.set("__p", 0);
+                }
+                template.save(pth);
+            }
+            ret.load(pth);
+            // System.out.println(ret.saveToString());
+            ret.save(pth);
+            return ret;
+
+        } catch (InvalidConfigurationException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static YamlConfiguration UpdateCofig(File dataFolder, Object pl, String relPath, String outPath) {
         if (!Files.exists(Paths.get(dataFolder.getAbsolutePath()), new LinkOption[0])) {
             try {
                 Files.createDirectory(Paths.get(dataFolder.getAbsolutePath()));
@@ -155,11 +195,14 @@ public class GameUtil {
                 if (changesMade) {
                     current.save(dataFolder + outPath);
                 }
+
+                return current;
             }
         } catch (InvalidConfigurationException | IOException var10) {
             var10.printStackTrace();
         }
 
+        return null;
     }
 
     public static Vector TranslateRelativeVelocity(Vector knockback, Player target,  Player attacker) {
