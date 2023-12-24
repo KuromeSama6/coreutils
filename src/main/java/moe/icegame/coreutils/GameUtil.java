@@ -1,6 +1,7 @@
 package moe.icegame.coreutils;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import com.google.gson.JsonObject;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.*;
 import org.bukkit.command.Command;
@@ -240,6 +241,28 @@ public class GameUtil {
         ret.set("pos", new Double[]{loc.getX(), loc.getY(), loc.getZ()});
 
         return ret;
+    }
+
+    public static JsonObject SerializeLocationJson(Location loc) {
+        JsonObject ret = new JsonObject();
+        ret.addProperty("world", loc.getWorld().getName());
+        ret.addProperty("x", loc.getX());
+        ret.addProperty("y", loc.getY());
+        ret.addProperty("z", loc.getZ());
+        ret.addProperty("yaw", loc.getYaw());
+        ret.addProperty("pitch", loc.getPitch());
+        return ret;
+    }
+
+    public static Location DeserializeLocation(JsonObject data) {
+        return new Location(
+                Bukkit.getWorld(data.get("world").getAsString()),
+                data.get("x").getAsDouble(),
+                data.get("y").getAsDouble(),
+                data.get("z").getAsDouble(),
+                data.get("yaw").getAsFloat(),
+                data.get("pitch").getAsFloat()
+        );
     }
 
     public static Double[] SerializePosition(Location loc) {
