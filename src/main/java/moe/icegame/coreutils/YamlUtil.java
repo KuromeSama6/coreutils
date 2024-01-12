@@ -51,9 +51,17 @@ public class YamlUtil {
     }
 
     public static List<YamlConfiguration> GetConfigurationList(List<?> li) {
-        return li.stream()
-                .map(c -> FromMap((Map<String, Object>) c))
-                .collect(Collectors.toList());
+        List<YamlConfiguration> ret = new ArrayList<>();
+        for (Object obj : li) {
+            try {
+                if (obj instanceof YamlConfiguration) ret.add((YamlConfiguration) obj);
+                else ret.add(FromMap((Map<String, Object>) obj));
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return ret;
     }
 
     public static <Tk, Tv, Uk, Uv> Map<Uk, Uv> Map(Map<Tk, Tv> map, Function<Tk, Uk> keyFunc, Function<Tv, Uv> valueFunc) {
