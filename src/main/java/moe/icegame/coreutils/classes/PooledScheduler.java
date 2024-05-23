@@ -15,12 +15,16 @@ public class PooledScheduler {
         this.plugin = plugin;
     }
 
-    public void Add(Runnable func, long delay) {
-        handles.add(Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, func, delay));
+    public int Add(Runnable func, long delay) {
+        int handle = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, func, delay);
+        handles.add(handle);
+        return handle;
     }
 
-    public void AddRepeating(Runnable func, long delay, long interval) {
-        handles.add(Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, func, delay, interval));
+    public int AddRepeating(Runnable func, long delay, long interval) {
+        int handle = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, func, delay, interval);
+        handles.add(handle);
+        return handle;
     }
 
     public void JoinMain(Runnable func) {
@@ -29,6 +33,11 @@ public class PooledScheduler {
 
     public void Free() {
         for (int handle : handles) Bukkit.getScheduler().cancelTask(handle);
+    }
+
+    public void Cancel(int handle) {
+        Bukkit.getScheduler().cancelTask(handle);
+        handles.remove((Object)handle);
     }
 
 }

@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 public class MySqlUtil {
     public static void AsyncQuery(HikariDataSource dataSource, String sql, BiConsumer<Boolean, String[][]> callback) {// Define a CompletableFuture to execute the database query
-        CompletableFuture.runAsync(() -> {
+        DevUtil.RunAsync(() -> {
             try {
                 String[][] resultSet = Query(dataSource, sql);
                 callback.accept(true, resultSet);
